@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>A Letter</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=Cinzel:wght@400;600&family=UnifrakturMaguntia&display=swap" rel="stylesheet"/>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      background: #f5ede0;
+      font-family: 'IM Fell English', serif;
+      overflow-x: hidden;
+    }
+
+    /* ══════════════════════════════
+       LOCK SCREEN
+    ══════════════════════════════ */
+    #lockScreen {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(ellipse at center, #fdf6ec 0%, #f0e0c4 100%);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* grid lines */
+    #lockScreen::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        repeating-linear-gradient(0deg, transparent, transparent 60px, rgba(139,90,43,0.06) 60px, rgba(139,90,43,0.06) 61px),
+        repeating-linear-gradient(90deg, transparent, transparent 60px, rgba(139,90,43,0.06) 60px, rgba(139,90,43,0.06) 61px);
+      pointer-events: none;
+    }
+
+    /* floating dust particles */
+    .particle {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(180,120,40,0.18);
+      animation: floatUp linear infinite;
+      pointer-events: none;
+    }
+    @keyframes floatUp {
+      0%   { transform: translateY(100vh) scale(0); opacity: 0; }
+      10%  { opacity: 1; }
+      90%  { opacity: .6; }
+      100% { transform: translateY(-10vh) scale(1); opacity: 0; }
+    }
+
+    /* card entrance */
+    .lock-card {
+      background: linear-gradient(145deg, #fffaf3, #fdf2e2);
+      border: 1px solid rgba(160,110,50,0.3);
+      border-radius: 4px;
+      padding: 48px 40px;
+      width: 100%;
+      max-width: 420px;
+      text-align: center;
+      box-shadow:
+        0 8px 40px rgba(130,80,20,0.12),
+        0 2px 8px rgba(130,80,20,0.08),
+        inset 0 0 40px rgba(255,235,200,0.4);
+      position: relative;
+      animation: cardDrop .8s cubic-bezier(0.22,1,0.36,1) both;
+    }
+    @keyframes cardDrop {
+      from { opacity: 0; transform: translateY(-40px) scale(0.95); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .lock-card::before,
+    .lock-card::after {
+      content: '✦';
+      position: absolute;
+      color: rgba(160,110,50,0.4);
+      font-size: 10px;
+    }
+    .lock-card::before { top: 14px; left: 14px; }
+    .lock-card::after  { bottom: 14px; right: 14px; }
+
+    /* wax seal pulse */
+    .wax-seal {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #c0392b, #7b0000);
+      margin: 0 auto 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      box-shadow: 0 4px 20px rgba(120,30,20,0.35), inset 0 2px 4px rgba(255,255,255,0.15);
+      position: relative;
+      animation: sealPulse 2.5s ease-in-out infinite;
+    }
+    @keyframes sealPulse {
+      0%, 100% { box-shadow: 0 4px 20px rgba(120,30,20,0.35), 0 0 0 0 rgba(180,40,30,0.3); }
+      50%       { box-shadow: 0 4px 20px rgba(120,30,20,0.35), 0 0 0 12px rgba(180,40,30,0); }
+    }
+    .wax-seal::after {
+      content: '';
+      position: absolute;
+      inset: 4px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+
+    #passInput {
+      background: rgba(255,250,240,0.8);
+      border: 1px solid rgba(160,110,50,0.35);
+      border-radius: 2px;
+      color: #5a3510;
+      font-family: 'IM Fell English', serif;
+      font-size: 15px;
+      letter-spacing: 3px;
+      text-align: center;
+      padding: 12px 16px;
+      width: 100%;
+      outline: none;
+      transition: border-color .3s, box-shadow .3s;
+    }
+    #passInput::placeholder {
+      letter-spacing: 1px;
+      color: rgba(120,80,30,0.35);
+      font-size: 12px;
+    }
+    #passInput:focus {
+      border-color: rgba(160,110,50,0.7);
+      box-shadow: 0 0 18px rgba(180,120,30,0.12);
+    }
+
+    /* shake animation for wrong password */
+    .shake {
+      animation: shake .4s cubic-bezier(.36,.07,.19,.97) both !important;
+    }
+    @keyframes shake {
+      10%, 90%  { transform: translateX(-3px); }
+      20%, 80%  { transform: translateX(5px); }
+      30%, 50%, 70% { transform: translateX(-6px); }
+      40%, 60%  { transform: translateX(6px); }
+    }
+
+    #unlockBtn {
+      margin-top: 18px;
+      width: 100%;
+      background: linear-gradient(135deg, #a0711f, #7d5210);
+      border: 1px solid rgba(160,110,50,0.5);
+      color: #fdf6ec;
+      font-family: 'Cinzel', serif;
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      padding: 12px;
+      border-radius: 2px;
+      cursor: pointer;
+      transition: all .3s;
+      position: relative;
+      overflow: hidden;
+    }
+    #unlockBtn::after {
+      content: '';
+      position: absolute;
+      top: 50%; left: -60%;
+      width: 40%; height: 100%;
+      background: rgba(255,255,255,0.15);
+      transform: skewX(-20deg) translateY(-50%);
+      animation: shimmer 2.5s ease-in-out infinite;
+    }
+    @keyframes shimmer {
+      0%   { left: -60%; }
+      100% { left: 120%; }
+    }
+    #unlockBtn:hover {
+      background: linear-gradient(135deg, #b8831f, #8f5e12);
+      box-shadow: 0 4px 18px rgba(160,100,20,0.25);
+      transform: translateY(-1px);
+    }
+    #unlockBtn:active { transform: scale(0.98) translateY(0); }
+
+    #errorMsg {
+      margin-top: 14px;
+      font-style: italic;
+      color: rgba(180,40,40,0.8);
+      font-size: 13px;
+      min-height: 20px;
+      transition: opacity .3s;
+    }
+
+    .hint-box {
+      margin-top: 22px;
+      background: rgba(255,248,235,0.7);
+      border: 1px dashed rgba(160,110,50,0.4);
+      border-radius: 3px;
+      padding: 14px 18px;
+      text-align: left;
+      animation: fadeSlideUp .6s .4s ease both;
+    }
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .hint-label {
+      font-family: 'Cinzel', serif;
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: rgba(120,75,20,0.7);
+      margin-bottom: 10px;
+    }
+    .hint-list {
+      margin: 0;
+      padding-left: 20px;
+      list-style: disc;
+    }
+    .hint-list li {
+      font-family: 'IM Fell English', serif;
+      font-size: 14px;
+      color: #5a3510;
+      line-height: 1.9;
+      letter-spacing: 1px;
+    }
+
+    /* ══════════════════════════════
+       ENVELOPE TRANSITION
+    ══════════════════════════════ */
+    #envelopeOverlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: #f5ede0;
+      z-index: 999;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+    }
+    #envelopeOverlay.active { display: flex; }
+
+    .env-wrap {
+      position: relative;
+      width: 220px;
+      height: 150px;
+    }
+    /* envelope body */
+    .env-body {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(160deg, #f0d9a8, #e0c080);
+      border-radius: 4px;
+      box-shadow: 0 8px 30px rgba(120,80,20,0.3);
+    }
+    /* envelope flap */
+    .env-flap {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 0;
+      border-left: 110px solid transparent;
+      border-right: 110px solid transparent;
+      border-top: 80px solid #d4b870;
+      transform-origin: top center;
+      animation: flapOpen .6s .3s ease forwards;
+      z-index: 2;
+    }
+    @keyframes flapOpen {
+      from { transform: rotateX(0deg); }
+      to   { transform: rotateX(-180deg); }
+    }
+    /* letter sliding out */
+    .env-letter {
+      position: absolute;
+      left: 20px; right: 20px;
+      bottom: 10px;
+      height: 80px;
+      background: #fdf6ec;
+      border: 1px solid rgba(180,130,60,0.3);
+      border-radius: 2px;
+      animation: letterRise .6s .9s ease forwards;
+      transform: translateY(0);
+      z-index: 1;
+    }
+    @keyframes letterRise {
+      from { transform: translateY(0); opacity: 1; }
+      to   { transform: translateY(-80px); opacity: 0; }
+    }
+    .env-label {
+      margin-top: 30px;
+      font-family: 'Cinzel', serif;
+      font-size: 11px;
+      letter-spacing: 4px;
+      color: rgba(120,80,20,0.6);
+      animation: blink 1s ease infinite alternate;
+    }
+    @keyframes blink { from { opacity: .4; } to { opacity: 1; } }
+
+    /* ══════════════════════════════
+       LETTER SCREEN
+    ══════════════════════════════ */
+    #letterScreen {
+      display: none;
+      min-height: 100vh;
+      background: radial-gradient(ellipse at top, #1a0e05 0%, #0a0602 100%);
+      padding: 60px 20px 80px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* falling petals */
+    .petal {
+      position: fixed;
+      top: -30px;
+      font-size: 16px;
+      animation: petalFall linear infinite;
+      pointer-events: none;
+      opacity: 0;
+      z-index: 0;
+    }
+    @keyframes petalFall {
+      0%   { transform: translateY(0) rotate(0deg) translateX(0); opacity: 0; }
+      10%  { opacity: .7; }
+      90%  { opacity: .4; }
+      100% { transform: translateY(105vh) rotate(720deg) translateX(40px); opacity: 0; }
+    }
+
+    .letter-wrapper {
+      max-width: 680px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+
+    .letter-top-deco {
+      text-align: center;
+      margin-bottom: 10px;
+      color: rgba(180,130,60,0.5);
+      font-size: 13px;
+      letter-spacing: 8px;
+      animation: fadeSlideUp .8s ease both;
+    }
+
+    .candle-area {
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 32px;
+      animation: flicker 2.8s ease-in-out infinite alternate;
+      filter: drop-shadow(0 0 14px rgba(255,160,30,0.7));
+    }
+    @keyframes flicker {
+      0%   { opacity: 1;   transform: scale(1)    rotate(0deg); }
+      20%  { opacity: .8;  transform: scale(1.02) rotate(.4deg); }
+      40%  { opacity: .95; transform: scale(.99)  rotate(-.3deg); }
+      60%  { opacity: .85; transform: scale(1.01) rotate(.2deg); }
+      80%  { opacity: .92; transform: scale(.98)  rotate(-.2deg); }
+      100% { opacity: .9;  transform: scale(1.02) rotate(.1deg); }
+    }
+
+    .tear-top, .tear-bottom {
+      width: 100%;
+      height: 18px;
+      overflow: hidden;
+    }
+    .tear-top svg, .tear-bottom svg { width: 100%; height: 100%; display: block; }
+
+    .letter-paper {
+      background: linear-gradient(180deg, #f5e8c8 0%, #efe0b4 30%, #e8d5a0 70%, #dfc98a 100%);
+      border-radius: 2px;
+      padding: 60px 64px 70px;
+      position: relative;
+      box-shadow:
+        0 2px 0 #c4aa6a,
+        0 4px 0 #b09550,
+        0 8px 30px rgba(0,0,0,0.7),
+        0 20px 60px rgba(0,0,0,0.5),
+        inset 0 0 80px rgba(160,110,20,0.15);
+      animation: paperReveal 1s .2s ease both;
+    }
+    @keyframes paperReveal {
+      from { opacity: 0; transform: scale(0.97) translateY(20px); }
+      to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .letter-paper::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: repeating-linear-gradient(
+        transparent, transparent 31px,
+        rgba(139,90,43,0.08) 31px, rgba(139,90,43,0.08) 32px
+      );
+      border-radius: 2px;
+      pointer-events: none;
+    }
+    .letter-paper::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 2px;
+      background:
+        radial-gradient(ellipse at 0% 0%,   rgba(100,60,10,0.2)  0%, transparent 50%),
+        radial-gradient(ellipse at 100% 0%,  rgba(80,40,5,0.15)   0%, transparent 45%),
+        radial-gradient(ellipse at 100% 100%,rgba(120,70,10,0.2)  0%, transparent 50%),
+        radial-gradient(ellipse at 0% 100%,  rgba(90,50,5,0.18)   0%, transparent 45%);
+      pointer-events: none;
+    }
+
+    .letter-content { position: relative; z-index: 1; }
+
+    .letter-header {
+      font-family: 'UnifrakturMaguntia', cursive;
+      font-size: 15px;
+      color: #5a3510;
+      text-align: right;
+      margin-bottom: 36px;
+      opacity: 0;
+      animation: fadeSlideUp .6s .8s ease forwards;
+    }
+
+    .letter-greeting {
+      font-family: 'IM Fell English', serif;
+      font-size: 19px;
+      color: #3d200a;
+      margin-bottom: 22px;
+      font-weight: bold;
+      opacity: 0;
+      animation: fadeSlideUp .6s 1s ease forwards;
+    }
+
+    /* each paragraph animates in with stagger */
+    .letter-body p {
+      font-family: 'IM Fell English', serif;
+      font-size: 16px;
+      line-height: 2.05;
+      color: #3a1e08;
+      text-indent: 2em;
+      margin-bottom: 14px;
+      opacity: 0;
+      animation: fadeSlideUp .7s ease forwards;
+    }
+    .letter-body p:first-child { text-indent: 0; }
+
+    .letter-body p:nth-child(1)  { animation-delay: 1.1s; }
+    .letter-body p:nth-child(2)  { animation-delay: 1.3s; }
+    .letter-body p:nth-child(3)  { animation-delay: 1.5s; }
+    .letter-body p:nth-child(4)  { animation-delay: 1.7s; }
+    .letter-body p:nth-child(5)  { animation-delay: 1.9s; }
+    .letter-body p:nth-child(6)  { animation-delay: 2.1s; }
+    .letter-body p:nth-child(7)  { animation-delay: 2.3s; }
+    .letter-body p:nth-child(8)  { animation-delay: 2.5s; }
+    .letter-body p:nth-child(9)  { animation-delay: 2.7s; }
+    .letter-body p:nth-child(10) { animation-delay: 2.9s; }
+
+    .letter-closing {
+      margin-top: 36px;
+      font-family: 'IM Fell English', serif;
+      font-size: 16px;
+      color: #3a1e08;
+      opacity: 0;
+      animation: fadeSlideUp .7s 3.1s ease forwards;
+    }
+
+    .letter-signature {
+      font-family: 'UnifrakturMaguntia', cursive;
+      font-size: 26px;
+      color: #5a3510;
+      margin-top: 6px;
+      opacity: 0.85;
+    }
+
+    .letter-bottom-deco {
+      text-align: center;
+      margin-top: 10px;
+      color: rgba(180,130,60,0.5);
+      font-size: 13px;
+      letter-spacing: 8px;
+      opacity: 0;
+      animation: fadeSlideUp .6s 3.4s ease forwards;
+    }
+
+    @media (max-width: 600px) {
+      .letter-paper { padding: 36px 24px 48px; }
+      .letter-body p { font-size: 14px; line-height: 1.95; }
+      .env-wrap { width: 160px; height: 110px; }
+      .env-flap { border-left-width: 80px; border-right-width: 80px; border-top-width: 60px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- LOCK SCREEN -->
+<div id="lockScreen">
+  <div class="lock-card">
+    <div class="wax-seal">🔒</div>
+
+    <input
+      type="password"
+      id="passInput"
+      placeholder="enter the secret word…"
+      autocomplete="off"
+      autocorrect="off"
+      autocapitalize="off"
+      spellcheck="false"
+    />
+
+    <button id="unlockBtn">Open the Letter</button>
+    <div id="errorMsg"></div>
+
+    <div class="hint-box">
+      <p class="hint-label">✦ Password Hints</p>
+      <ul class="hint-list">
+        <li>Password in small letters with no space</li>
+        <li>Passwords ⬇️</li>
+        <li>First word of our conversation</li>
+        <li>A nickname we gave to each other</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ENVELOPE TRANSITION OVERLAY -->
+<div id="envelopeOverlay">
+  <div class="env-wrap">
+    <div class="env-body"></div>
+    <div class="env-flap"></div>
+    <div class="env-letter"></div>
+  </div>
+  <p class="env-label">Opening…</p>
+</div>
+
+<!-- LETTER SCREEN -->
+<div id="letterScreen">
+  <div class="letter-wrapper">
+    <div class="candle-area">🕯️</div>
+    <div class="letter-top-deco">✦ &nbsp; ✦ &nbsp; ✦</div>
+
+    <div class="tear-top">
+      <svg viewBox="0 0 700 18" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M0,18 Q35,2 70,12 Q105,22 140,8 Q175,0 210,14 Q245,24 280,6 Q315,0 350,16 Q385,24 420,8 Q455,0 490,12 Q525,22 560,6 Q595,0 630,14 Q665,24 700,10 L700,18 Z" fill="#f5e8c8"/>
+      </svg>
+    </div>
+
+    <div class="letter-paper">
+      <div class="letter-content">
+        <div class="letter-greeting">Hey,</div>
+
+        <div class="letter-body">
+          <p>I am not disappointed that you didn't choose me. I am disappointed that you pretended you wanted me. You made me fall for you and then walked away as if I never mattered. You gave me attention disguised as love. You gave me hope without commitment. And the worst part is, you knew it. You knew I was getting attached, yet you kept acting like you wanted me to.</p>
+          <p>What I never understood was why you made me fall for you if you were always planning to walk away.</p>
+          <p>I remember everything about you — your words, your smile, and the memories we shared. Since the day I told you the truth, everything started falling apart. Maybe I should never have told you. Maybe I should have kept it to myself. I knew that one day we would be separated, but in the end, you treated me like I was just a pastime to you.</p>
+          <p>I still remember the first time you loved me. You called me by a nickname that you had created, and I felt like I was in seventh heaven. Those days felt like paradise. But when you left, my life became hell. Still, that's okay. I took all the blame. Maybe it was my fault.</p>
+          <p>Do you know why I left that place? Because seeing you every day and feeling the distance between us was killing me. It wasn't letting me sleep.</p>
+          <p>To be honest, I am done with this. I am done waiting. I am done crying. I am done with trembling hands. At some point, it has to stop; otherwise, it will tear me apart from the inside.</p>
+          <p>Maybe you never loved me. Maybe I was just someone who helped you pass the time. I was always there for you when you needed me, but where were you when I needed you the most?</p>
+          <p>I don't want to hurt you because you were once my home, and I don't burn the place I once lived in.</p>
+          <p>That's all I wanted to say. From now on, I will never try to contact you again. I quit.</p>
+          <p>I always wanted to give you something. I am returning your gift because it will always remind me of something I need to let go of.</p>
+        </div>
+
+        <div class="letter-closing">
+          <p>Thank you.</p>
+          <p style="margin-top:6px;">Goodbye.</p>
+          <div class="letter-signature" style="margin-top:22px;">~ Forever yours, once</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tear-bottom">
+      <svg viewBox="0 0 700 18" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M0,0 Q35,16 70,6 Q105,-2 140,10 Q175,18 210,4 Q245,-2 280,12 Q315,18 350,2 Q385,-2 420,10 Q455,18 490,6 Q525,-2 560,12 Q595,18 630,4 Q665,-2 700,8 L700,0 Z" fill="#dfc98a"/>
+      </svg>
+    </div>
+
+    <div class="letter-bottom-deco">✦ &nbsp; ✦ &nbsp; ✦</div>
+  </div>
+</div>
+
+<script>
+  /* ══════════════════════════════════════════════════════════
+     API CONFIG  –  update before deploying
+  ══════════════════════════════════════════════════════════ */
+  const API_URL   = 'https:///api.chemicurewater.com/api/letter/visit';
+ //const API_URL   = 'https://localhost:44310/api/letter/visit';
+  const API_TOKEN = btoa('FSTDA:123');   // Basic auth
+
+  /* ── Helper: detect device info from browser ── */
+  function getDeviceInfo() {
+    const ua = navigator.userAgent;
+    let deviceType = 'Desktop';
+    if (/Mobi|Android|iPhone|iPod/i.test(ua))  deviceType = 'Mobile';
+    else if (/iPad|Tablet/i.test(ua))           deviceType = 'Tablet';
+
+    let platform = 'Unknown';
+    if (/Android/i.test(ua))      platform = 'Android';
+    else if (/iPhone|iPad/i.test(ua)) platform = 'iOS';
+    else if (/Windows/i.test(ua)) platform = 'Windows';
+    else if (/Mac/i.test(ua))     platform = 'Mac';
+    else if (/Linux/i.test(ua))   platform = 'Linux';
+
+    return {
+      userAgent  : ua,
+      deviceType : deviceType,
+      platform   : platform,
+      language   : navigator.language || ''
+    };
+  }
+
+  /* ── Fire-and-forget: log event to API, page keeps running even if it fails ── */
+  function logEvent(eventType, val) {
+    const info = getDeviceInfo();
+    fetch(API_URL, {
+      method : 'POST',
+      headers: {
+        'Content-Type' : 'application/json',
+        'Authorization': 'Basic ' + API_TOKEN
+      },
+      body: JSON.stringify({
+        eventType  : eventType,
+        userAgent  : info.userAgent,
+        deviceType : info.deviceType,
+        platform   : info.platform,
+        language   : info.language,
+        password : val
+      })
+    }).catch(function() {
+    //  alert('Something went wrong!!');
+     });
+  }
+
+  /* ── Log page open immediately ── */
+  logEvent('PageOpened', 'start');
+
+  /* ── Floating dust particles on lock screen ── */
+  const lockBg = document.getElementById('lockScreen');
+  for (let i = 0; i < 18; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const size = 3 + Math.random() * 5;
+    p.style.cssText = `
+      width:${size}px; height:${size}px;
+      left:${Math.random()*100}%;
+      animation-duration:${8 + Math.random()*12}s;
+      animation-delay:${Math.random()*10}s;
+    `;
+    lockBg.appendChild(p);
+  }
+
+  /* ── Falling petals on letter screen ── */
+  const petals = ['🌸','🌺','🍂','✿','❀'];
+  const letterBg = document.getElementById('letterScreen');
+  for (let i = 0; i < 14; i++) {
+    const p = document.createElement('div');
+    p.className = 'petal';
+    p.textContent = petals[Math.floor(Math.random()*petals.length)];
+    p.style.cssText = `
+      left:${Math.random()*100}%;
+      animation-duration:${10 + Math.random()*14}s;
+      animation-delay:${Math.random()*12}s;
+      font-size:${12 + Math.random()*10}px;
+    `;
+    letterBg.appendChild(p);
+  }
+
+  /* ── Password logic (unchanged) ── */
+  const VALID = new Set(["cutipie","shonababy","senorita","hhhh","sweetipie"]);
+
+  const passInput    = document.getElementById('passInput');
+  const unlockBtn    = document.getElementById('unlockBtn');
+  const errorMsg     = document.getElementById('errorMsg');
+  const lockScreen   = document.getElementById('lockScreen');
+  const envelope     = document.getElementById('envelopeOverlay');
+  const letterScreen = document.getElementById('letterScreen');
+
+  function tryUnlock() {
+    const val = passInput.value.trim().toLowerCase().replace(/\s+/g,'');
+      
+
+    if (VALID.has(val)) {
+       logEvent('LetterUnlocked', val);
+      /* fade out lock screen */
+      lockScreen.style.transition = 'opacity .6s ease';
+      lockScreen.style.opacity = '0';
+      setTimeout(() => {
+        lockScreen.style.display = 'none';
+        /* show envelope animation */
+        envelope.classList.add('active');
+        setTimeout(() => {
+          envelope.classList.remove('active');
+          /* show letter */
+          letterScreen.style.display = 'block';
+          window.scrollTo(0, 0);
+        }, 1800);
+      }, 600);
+    } else {
+      logEvent('WrongPassword', val);
+      errorMsg.textContent = '✦  You forgot??. Try again.  ✦';
+      passInput.classList.remove('shake');
+      void passInput.offsetWidth; /* reflow to restart */
+      passInput.classList.add('shake');
+      passInput.value = '';
+      passInput.style.borderColor = 'rgba(180,60,60,0.6)';
+      setTimeout(() => {
+        errorMsg.textContent = '';
+        passInput.style.borderColor = 'rgba(160,110,50,0.35)';
+        passInput.classList.remove('shake');
+      }, 2500);
+    }
+  }
+
+  unlockBtn.addEventListener('click', tryUnlock);
+  passInput.addEventListener('keydown', e => { if (e.key === 'Enter') tryUnlock(); });
+</script>
+</body>
+</html>
